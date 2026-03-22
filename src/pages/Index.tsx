@@ -1,16 +1,47 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useCallback, useEffect } from 'react';
+import Navbar from '@/components/medlab/Navbar';
+import HomePage from '@/components/medlab/HomePage';
+import AboutPage from '@/components/medlab/AboutPage';
+import FindBedsPage from '@/components/medlab/FindBedsPage';
+import FavoritesPage from '@/components/medlab/FavoritesPage';
+import Footer from '@/components/medlab/Footer';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const [activePage, setActivePage] = useState('home');
+  const [savedIds, setSavedIds] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem('medlab-saved') || '[]'); } catch { return []; }
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('medlab-saved', JSON.stringify(savedIds));
+  }, [savedIds]);
+
+  const navigate = useCallback((page: string) => {
+    setActivePage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const toggleSave = useCallback((id: number) => {
+    setSavedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }, []);
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-ml-bg">
+      <Navbar activePage={activePage} onNavigate={navigate} />
+      
+      {activePage === 'home' && <HomePage onNavigate={navigate} onSearch={handleSearch} />}
+      {activePage === 'about' && <AboutPage onNavigate={navigate} />}
+      {activePage === 'beds' && <FindBedsPage savedIds={savedIds} onToggleSave={toggleSave} initialSearch={searchQuery} />}
+      {activePage === 'favorites' && <FavoritesPage savedIds={savedIds} onToggleSave={toggleSave} onNavigate={navigate} />}
+
+      <Footer onNavigate={navigate} />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
