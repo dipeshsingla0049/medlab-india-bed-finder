@@ -27,22 +27,23 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState<{ name: string; bedType: string; bookingId: string } | null>(null);
 
+  const adjusted = hospital ? getAdjustedBeds(hospital, bedAdjustments) : { generalBeds: 0, icuBeds: 0 };
+  const generalDisabled = adjusted.generalBeds === 0;
+  const icuDisabled = adjusted.icuBeds === 0;
+
   useEffect(() => {
     if (isOpen) {
       setName(''); setPhone(''); setEmail(''); setBedType('General'); setErrors({}); setSuccess(null);
     }
   }, [isOpen, hospital?.id]);
 
-  if (!isOpen || !hospital) return null;
-
-  const adjusted = getAdjustedBeds(hospital, bedAdjustments);
-  const generalDisabled = adjusted.generalBeds === 0;
-  const icuDisabled = adjusted.icuBeds === 0;
-
   useEffect(() => {
+    if (!isOpen) return;
     if (generalDisabled && !icuDisabled) setBedType('ICU');
     else if (icuDisabled && !generalDisabled) setBedType('General');
-  }, [generalDisabled, icuDisabled]);
+  }, [isOpen, generalDisabled, icuDisabled]);
+
+  if (!isOpen || !hospital) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,13 +54,14 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
       setErrors(fieldErrors);
       return;
     }
-    const isDisabled = result.data.bedType === 'General' ? generalDisabled : icuDisabled;
+    const data = result.data as { name: string; phone: string; email: string; bedType: 'General' | 'ICU' };
+    const isDisabled = data.bedType === 'General' ? generalDisabled : icuDisabled;
     if (isDisabled) {
       setErrors({ bedType: 'Selected bed type unavailable' });
       return;
     }
-    const bookingId = onSubmit(result.data);
-    setSuccess({ name: result.data.name, bedType: result.data.bedType, bookingId });
+    const bookingId = onSubmit(data);
+    setSuccess({ name: data.name, bedType: data.bedType, bookingId });
   };
 
   return (
