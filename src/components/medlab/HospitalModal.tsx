@@ -31,7 +31,13 @@ const HospitalModal = ({ hospital, isOpen, isSaved, bedAdjustments, onClose, onT
           <X className="w-4 h-4 text-ml-text" />
         </button>
 
-        <img id="modal-img" src={hospital.image} alt={hospital.name} className="w-full h-60 object-cover" />
+        <img
+          id="modal-img"
+          src={hospital.image}
+          alt={hospital.name}
+          className="w-full h-60 object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=400&fit=crop'; }}
+        />
 
         <div className="p-7">
           <h2 id="modal-name" className="font-syne text-2xl font-bold text-ml-text mb-2">{hospital.name}</h2>
