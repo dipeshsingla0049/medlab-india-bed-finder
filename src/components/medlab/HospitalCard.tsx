@@ -26,7 +26,13 @@ const HospitalCard = ({ hospital, isSaved, bedAdjustments, onToggleSave, onViewD
   return (
     <div className="hospital-card bg-ml-white border border-ml-border rounded-2xl overflow-hidden">
       <div className="relative h-[200px]">
-        <img src={hospital.image} alt={hospital.name} className="card-img w-full h-full object-cover" loading="lazy" />
+        <img
+          src={hospital.image}
+          alt={hospital.name}
+          className="card-img w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=600&h=400&fit=crop'; }}
+        />
         <span className={`availability-badge absolute top-3 left-3 ${avail.bg} ${avail.color} text-xs font-semibold px-3 py-1 rounded-full`}>
           {avail.label}
         </span>

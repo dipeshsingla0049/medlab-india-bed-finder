@@ -23,7 +23,7 @@ const hospitalImages = [
   'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=600&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1559757148-5c688a10ba90?w=600&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=600&h=400&fit=crop',
   'https://images.unsplash.com/photo-1580281657527-47f249e8f4df?w=600&h=400&fit=crop',
