@@ -1,26 +1,24 @@
-import { X, Star, MapPin, Phone, Clock, Heart, Navigation } from 'lucide-react';
+import { X, Star, MapPin, Phone, Clock, Heart, Navigation, CalendarPlus } from 'lucide-react';
 import { Hospital } from '@/data/hospitals';
+import { getBedStatus, getAdjustedBeds, BedAdjustment } from '@/lib/bedStatus';
 
 interface HospitalModalProps {
   hospital: Hospital | null;
   isOpen: boolean;
   isSaved: boolean;
+  bedAdjustments: Record<number, BedAdjustment>;
   onClose: () => void;
   onToggleSave: (id: number) => void;
+  onBook: (hospital: Hospital) => void;
 }
 
-const getStatusInfo = (count: number) => {
-  if (count >= 20) return { label: 'Available', color: 'text-ml-green', bg: 'bg-ml-green-bg' };
-  if (count >= 5) return { label: 'Limited', color: 'text-ml-yellow', bg: 'bg-ml-yellow-bg' };
-  if (count > 0) return { label: 'Critical', color: 'text-ml-red', bg: 'bg-ml-red-bg' };
-  return { label: 'Full', color: 'text-ml-red', bg: 'bg-ml-red-bg' };
-};
-
-const HospitalModal = ({ hospital, isOpen, isSaved, onClose, onToggleSave }: HospitalModalProps) => {
+const HospitalModal = ({ hospital, isOpen, isSaved, bedAdjustments, onClose, onToggleSave, onBook }: HospitalModalProps) => {
   if (!isOpen || !hospital) return null;
 
-  const generalStatus = getStatusInfo(hospital.generalBeds);
-  const icuStatus = getStatusInfo(hospital.icuBeds);
+  const adjusted = getAdjustedBeds(hospital, bedAdjustments);
+  const generalStatus = getBedStatus(adjusted.generalBeds);
+  const icuStatus = getBedStatus(adjusted.icuBeds);
+  const total = adjusted.generalBeds + adjusted.icuBeds;
 
   return (
     <div id="modal-overlay" className="modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 ml-fade-in" onClick={onClose}>
@@ -68,12 +66,12 @@ const HospitalModal = ({ hospital, isOpen, isSaved, onClose, onToggleSave }: Hos
               <tbody>
                 <tr className="border-t border-ml-border">
                   <td className="py-3 text-ml-text font-medium">General</td>
-                  <td className="py-3 text-ml-text">{hospital.generalBeds} beds</td>
+                  <td className="py-3 text-ml-text">{adjusted.generalBeds} beds</td>
                   <td className="py-3 text-right"><span className={`${generalStatus.bg} ${generalStatus.color} text-xs font-semibold px-2.5 py-1 rounded-full`}>{generalStatus.label}</span></td>
                 </tr>
                 <tr className="border-t border-ml-border">
                   <td className="py-3 text-ml-text font-medium">ICU</td>
-                  <td className="py-3 text-ml-text">{hospital.icuBeds} beds</td>
+                  <td className="py-3 text-ml-text">{adjusted.icuBeds} beds</td>
                   <td className="py-3 text-right"><span className={`${icuStatus.bg} ${icuStatus.color} text-xs font-semibold px-2.5 py-1 rounded-full`}>{icuStatus.label}</span></td>
                 </tr>
               </tbody>
@@ -87,26 +85,36 @@ const HospitalModal = ({ hospital, isOpen, isSaved, onClose, onToggleSave }: Hos
             <Clock className="w-4 h-4" /> {hospital.hours}
           </p>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
             <button
-              id="modal-directions"
-              onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(hospital.name + ' ' + hospital.location)}`, '_blank')}
-              className="ml-btn flex-1 bg-ml-primary text-ml-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-ml-primary-dark transition-colors"
+              onClick={() => onBook(hospital)}
+              disabled={total === 0}
+              className="ml-btn w-full bg-ml-green text-ml-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Navigation className="w-4 h-4" /> Get Directions
+              <CalendarPlus className="w-4 h-4" />
+              {total === 0 ? 'No Beds Available' : 'Book a Bed'}
             </button>
-            <button
-              id="modal-save"
-              onClick={() => onToggleSave(hospital.id)}
-              className={`ml-btn flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border transition-colors
-                ${isSaved
-                  ? 'bg-ml-red-bg border-ml-red/20 text-ml-red'
-                  : 'bg-ml-white border-ml-border text-ml-text-2 hover:border-ml-emergency/30 hover:text-ml-emergency'
-                }`}
-            >
-              <Heart className={`w-4 h-4 ${isSaved ? 'fill-ml-red' : ''}`} />
-              {isSaved ? 'Saved' : 'Save to Favorites'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                id="modal-directions"
+                onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(hospital.name + ' ' + hospital.location)}`, '_blank')}
+                className="ml-btn flex-1 bg-ml-primary text-ml-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-ml-primary-dark transition-colors"
+              >
+                <Navigation className="w-4 h-4" /> Get Directions
+              </button>
+              <button
+                id="modal-save"
+                onClick={() => onToggleSave(hospital.id)}
+                className={`ml-btn flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border transition-colors
+                  ${isSaved
+                    ? 'bg-ml-red-bg border-ml-red/20 text-ml-red'
+                    : 'bg-ml-white border-ml-border text-ml-text-2 hover:border-ml-emergency/30 hover:text-ml-emergency'
+                  }`}
+              >
+                <Heart className={`w-4 h-4 ${isSaved ? 'fill-ml-red' : ''}`} />
+                {isSaved ? 'Saved' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
