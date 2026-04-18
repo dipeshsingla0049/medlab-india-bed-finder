@@ -1,25 +1,15 @@
-import { Star, MapPin, Phone, Heart } from 'lucide-react';
+import { Star, MapPin, Phone, Heart, CalendarPlus } from 'lucide-react';
 import { Hospital } from '@/data/hospitals';
+import { getBedStatus, getBedCountColor, getAdjustedBeds, BedAdjustment } from '@/lib/bedStatus';
 
 interface HospitalCardProps {
   hospital: Hospital;
   isSaved: boolean;
+  bedAdjustments: Record<number, BedAdjustment>;
   onToggleSave: (id: number) => void;
   onViewDetails: (hospital: Hospital) => void;
+  onBook: (hospital: Hospital) => void;
 }
-
-const getBedColor = (count: number) => {
-  if (count >= 20) return 'text-ml-green';
-  if (count >= 5) return 'text-ml-yellow';
-  return 'text-ml-red';
-};
-
-const getAvailabilityBadge = (general: number, icu: number) => {
-  const total = general + icu;
-  if (total >= 30) return { text: 'Available', bg: 'bg-ml-green-bg', color: 'text-ml-green' };
-  if (total >= 10) return { text: 'Limited', bg: 'bg-ml-yellow-bg', color: 'text-ml-yellow' };
-  return { text: 'Critical', bg: 'bg-ml-red-bg', color: 'text-ml-red' };
-};
 
 const getPriceBadge = (price: string) => {
   if (price === 'Government') return { bg: 'bg-ml-green-bg', color: 'text-ml-green' };
@@ -27,26 +17,25 @@ const getPriceBadge = (price: string) => {
   return { bg: 'bg-ml-yellow-bg', color: 'text-ml-yellow' };
 };
 
-const HospitalCard = ({ hospital, isSaved, onToggleSave, onViewDetails }: HospitalCardProps) => {
-  const avail = getAvailabilityBadge(hospital.generalBeds, hospital.icuBeds);
+const HospitalCard = ({ hospital, isSaved, bedAdjustments, onToggleSave, onViewDetails, onBook }: HospitalCardProps) => {
+  const adjusted = getAdjustedBeds(hospital, bedAdjustments);
+  const total = adjusted.generalBeds + adjusted.icuBeds;
+  const avail = getBedStatus(total);
   const priceStyle = getPriceBadge(hospital.price);
 
   return (
     <div className="hospital-card bg-ml-white border border-ml-border rounded-2xl overflow-hidden">
-      {/* Image */}
       <div className="relative h-[200px]">
         <img src={hospital.image} alt={hospital.name} className="card-img w-full h-full object-cover" loading="lazy" />
         <span className={`availability-badge absolute top-3 left-3 ${avail.bg} ${avail.color} text-xs font-semibold px-3 py-1 rounded-full`}>
-          {avail.text}
+          {avail.label}
         </span>
         <span className={`price-badge absolute top-3 right-3 ${priceStyle.bg} ${priceStyle.color} text-xs font-semibold px-3 py-1 rounded-full`}>
           {hospital.price}
         </span>
       </div>
 
-      {/* Body */}
       <div className="p-5">
-        {/* Rating */}
         <div className="card-rating flex items-center gap-1 mb-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(hospital.rating) ? 'text-ml-yellow fill-ml-yellow' : 'text-ml-border'}`} />
@@ -60,7 +49,6 @@ const HospitalCard = ({ hospital, isSaved, onToggleSave, onViewDetails }: Hospit
           <MapPin className="w-3.5 h-3.5" /> {hospital.location}
         </p>
 
-        {/* Diseases */}
         <div className="card-diseases flex flex-wrap gap-1.5 mb-4">
           {hospital.diseases.slice(0, 3).map((d) => (
             <span key={d} className="disease-tag bg-ml-primary-light text-ml-primary text-xs font-medium px-2.5 py-1 rounded-full">{d}</span>
@@ -72,8 +60,8 @@ const HospitalCard = ({ hospital, isSaved, onToggleSave, onViewDetails }: Hospit
 
         <div className="border-t border-ml-border pt-3 mb-3">
           <div className="card-beds flex justify-between text-sm">
-            <span className="beds-general">General: <strong className={getBedColor(hospital.generalBeds)}>{hospital.generalBeds} beds</strong></span>
-            <span className="beds-icu">ICU: <strong className={getBedColor(hospital.icuBeds)}>{hospital.icuBeds} beds</strong></span>
+            <span className="beds-general">General: <strong className={getBedCountColor(adjusted.generalBeds)}>{adjusted.generalBeds} beds</strong></span>
+            <span className="beds-icu">ICU: <strong className={getBedCountColor(adjusted.icuBeds)}>{adjusted.icuBeds} beds</strong></span>
           </div>
         </div>
 
@@ -81,7 +69,7 @@ const HospitalCard = ({ hospital, isSaved, onToggleSave, onViewDetails }: Hospit
           <Phone className="w-3 h-3" /> {hospital.contact}
         </p>
 
-        <div className="card-buttons flex gap-2">
+        <div className="card-buttons flex gap-2 mb-2">
           <button
             onClick={() => onViewDetails(hospital)}
             className="btn-details ml-btn flex-1 bg-ml-primary text-ml-white py-2.5 rounded-lg text-sm font-semibold hover:bg-ml-primary-dark transition-colors"
@@ -100,6 +88,14 @@ const HospitalCard = ({ hospital, isSaved, onToggleSave, onViewDetails }: Hospit
             {isSaved ? 'Saved' : 'Save'}
           </button>
         </div>
+        <button
+          onClick={() => onBook(hospital)}
+          disabled={total === 0}
+          className="ml-btn w-full bg-ml-green text-ml-white py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <CalendarPlus className="w-3.5 h-3.5" />
+          {total === 0 ? 'No Beds Available' : 'Book a Bed'}
+        </button>
       </div>
     </div>
   );
