@@ -13,7 +13,7 @@ interface FavoritesPageProps {
   bedAdjustments: Record<number, BedAdjustment>;
   bookings: Booking[];
   onCancelBooking: (bookingId: string) => void;
-  onBookingSubmit: (hospital: { id: number; name: string }, data: { name: string; phone: string; email: string; bedType: 'General' | 'ICU' }) => string;
+  onBookingSubmit: (hospital: { id: number; name: string }, data: { bookingId: string; name: string; phone: string; email: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: 'UPI' | 'Card' | 'Net Banking' }) => void;
 }
 
 const FavoritesPage = ({ savedIds, onToggleSave, onNavigate, bedAdjustments, bookings, onCancelBooking, onBookingSubmit }: FavoritesPageProps) => {
