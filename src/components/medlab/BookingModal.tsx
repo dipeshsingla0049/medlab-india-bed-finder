@@ -42,7 +42,8 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
   const [bedType, setBedType] = useState<'General' | 'ICU'>('General');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState<{ bookingId: string; name: string; bedType: string; deposit: number } | null>(null);
+  const [success, setSuccess] = useState<{ bookingId: string; name: string; phone: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: PaymentMethod; createdAt: number } | null>(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   const adjusted = hospital ? getAdjustedBeds(hospital, bedAdjustments) : { generalBeds: 0, icuBeds: 0 };
   const generalDisabled = adjusted.generalBeds === 0;
