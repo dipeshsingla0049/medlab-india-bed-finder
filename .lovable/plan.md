@@ -1,64 +1,65 @@
+## Plan: Minimum Booking Deposit Step
 
+Insert a deposit step between the booking form and the success screen in `BookingModal`, with realistic Indian hospital deposit amounts on each hospital record.
 
-## Plan: Book a Bed Feature
+### 1. Data: add `minDeposit` to every hospital
 
-### 1. Booking State (src/pages/Index.tsx)
-- Add `bedAdjustments` state: `Record<number, { general: number; icu: number }>` tracking how many beds are booked per hospital per type (negative deltas).
-- Add `bookings` state: array of `{ id, hospitalId, hospitalName, name, phone, email, bedType, createdAt }`.
-- Persist both to `localStorage` (`medlab-bookings`, `medlab-bed-adjustments`).
-- Pass `getAdjustedBeds(hospital)` helper down so cards/modal display live counts.
+In `src/data/hospitals.ts`:
+- Extend `Hospital` interface with `minDeposit: number` (base deposit, ICU surcharge added at runtime).
+- Curated 18 hospitals: assign explicitly by tier.
+  - Government / trust (AIIMS, CMC, NIMHANS, PGIMER, Tata Memorial, SMS, SSKM): ₹500–₹1,000
+  - Mid-tier private (Manipal, Yashoda, Global, Ruby Hall, Narayana, Fortis): ₹1,500–₹2,500
+  - Premium (Apollo, Medanta, Kokilaben, Max, Apollo Chennai): ₹3,000–₹5,000
+- Generated 90 hospitals: derive from existing `price` field
+  - `Government` → range(500, 1000)
+  - `Private` → range(1500, 2500)
+  - `Premium` → range(3000, 5000)
+  - Round to nearest ₹100 for cleaner display.
+- Helper `getDeposit(hospital, bedType)` in `src/lib/bedStatus.ts`:
+  - Returns `hospital.minDeposit + (bedType === 'ICU' ? 1500 : 0)`.
+  - Fallback ₹2,500 if `minDeposit` missing.
 
-### 2. New Component: BookingModal (src/components/medlab/BookingModal.tsx)
-- Props: `hospital`, `isOpen`, `onClose`, `onSubmit(data)`.
-- Form fields with **zod validation**:
-  - Full Name (text, required, 2-100 chars)
-  - Phone Number (tel input, required, 10-15 digits)
-  - Email (email, required, valid format)
-  - Bed Type (radio: General / ICU) — disable option if 0 beds available
-- Info banner (yellow): "Your booking request has been submitted. Final confirmation and remaining details will be approved by the hospital directly for a smoother experience."
-- Submit + Cancel buttons.
-- After submit → switches internally to **Success view** showing hospital name, bed type, user name, booking ID, and a Done button.
-- Reuses shadcn `Dialog`, `Input`, `Label`, `RadioGroup`, `Button`.
+### 2. BookingModal: three-step flow
 
-### 3. Updates to HospitalCard.tsx
-- Add third button "Book a Bed" (green, full-width row below existing buttons, or restructured into 2-row button layout).
-- Display **adjusted** general/icu bed counts (passed via props).
-- Status badge recalculated from adjusted total.
+`src/components/medlab/BookingModal.tsx` becomes a state machine: `step: 'form' | 'deposit' | 'success'`.
 
-### 4. Updates to HospitalModal.tsx
-- Add "Book a Bed" button alongside Get Directions / Save.
-- Show adjusted bed counts in the table and recalculated status (Available ≥20, Limited ≤10, Full =0 per spec — note: spec says "≤10 yellow, 0 red", others green).
-- Status thresholds aligned to user spec.
+**Step 1 — Form (existing):** "Submit Booking" CTA changes to "Continue" → on valid submit, advance to `deposit` (do NOT yet create booking or adjust beds).
 
-### 5. Updates to FavoritesPage (src/components/medlab/FavoritesPage.tsx)
-- Add new "My Bookings" section above favorites OR a small list showing each booking with hospital, bed type, name, and an **Unbook/Cancel** button that restores the bed count.
+**Step 2 — Deposit (new):**
+- Heading (Syne, 2xl, bold): "Reserve your bed"
+- Body line: "To reserve your bed at **{Hospital Name}**, a minimum deposit of **₹{amount}** is required."
+- Reassurance pill (soft bg `bg-ml-primary-light`, rounded-xl, p-3): "This amount will be fully adjusted against your final hospital bill."
+- Payment method as 3 selectable cards (grid, same radio-card pattern used for bed type). Lucide icons:
+  - UPI — `Smartphone`
+  - Credit / Debit Card — `CreditCard`
+  - Net Banking — `Landmark`
+  - Selected card: `border-ml-primary bg-ml-primary-light`; default: `border-ml-border`.
+- Primary CTA (full width, `bg-ml-primary`, rounded-xl): "Pay ₹{amount} & Secure My Bed"
+- Plain text back link below CTA (centered, text-sm, text-ml-muted, hover text-ml-primary): "← Go back" — returns to form step preserving entered values.
+- On CTA click: call `onSubmit(data)` (creates booking + decrements beds), advance to `success`.
 
-### 6. Status Badge Logic (centralized in src/lib/bedStatus.ts)
-```ts
-total === 0 → { label: 'Full', color: red }
-total <= 10 → { label: 'Limited', color: yellow }
-else → { label: 'Available', color: green }
-```
-Used in HospitalCard, HospitalModal, BookingModal.
+**Step 3 — Success (revised):**
+- Same green check pattern, but copy reads: "Your bed is secured. Please show this reference at the hospital admission counter."
+- Confirmation card lists: 8-char alphanumeric booking ID (uppercase, generated client-side, e.g. `MD7K2X9P`), hospital name, bed type chip, deposit amount paid (`₹{amount}`).
+- Replace existing `bk_...` booking ID format. Generator: `Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('')` over `A-Z0-9`.
 
-### 7. Wiring (Index.tsx)
-- `handleBookingSubmit(hospital, formData)`: append booking, decrement `bedAdjustments[hospital.id][bedType]` by 1.
-- `handleCancelBooking(bookingId)`: remove booking, increment count back by 1.
-- Pass `bookings`, `onCancelBooking`, `getAdjustedHospital` into FavoritesPage and FindBedsPage.
+### 3. Wiring
 
-### Files to create
-- `src/components/medlab/BookingModal.tsx`
-- `src/lib/bedStatus.ts`
+- `Index.tsx` `handleBookingSubmit`: accept the externally-generated 8-char ID via the data payload (or generate new format here). Simpler: generate inside `BookingModal` and pass to `onSubmit` as `bookingId`; update signature so `Index` uses it instead of its own `bk_...`.
+- Update `Booking` interface (already has `id: string`) — no shape change, just different format.
+- All existing localStorage persistence continues to work.
 
-### Files to edit
-- `src/pages/Index.tsx` — booking state + persistence + handlers
-- `src/components/medlab/HospitalCard.tsx` — Book button + adjusted counts
-- `src/components/medlab/HospitalModal.tsx` — Book button + adjusted counts
-- `src/components/medlab/FindBedsPage.tsx` — pass adjustments + open booking modal
-- `src/components/medlab/FavoritesPage.tsx` — bookings list with Unbook action
+### Tone & visual conformance
 
-### UX details
-- Booking modal uses existing design tokens (`bg-ml-primary`, Syne headings, rounded-2xl).
-- Success screen: green check icon, hospital name, bed type chip, user name, "Done" button.
-- Toast notification on submit and on cancel using existing `sonner`.
+- All copy avoids "transaction", "checkout", "invoice".
+- Reuses existing tokens: `font-syne`, `font-dm` (body via Tailwind default), `rounded-2xl`/`rounded-xl`, `bg-ml-primary`, `bg-ml-primary-light`, `border-ml-border`, `ml-scale-in` modal animation, same X close button pattern.
+- No new dependencies.
 
+### Files changed
+- `src/data/hospitals.ts` — add `minDeposit` to interface + all entries
+- `src/lib/bedStatus.ts` — add `getDeposit` helper, update `Booking` (no schema change)
+- `src/components/medlab/BookingModal.tsx` — three-step flow, deposit screen, new ID generator
+- `src/pages/Index.tsx` — accept booking ID from modal; persist deposit amount on booking record (optional: add `deposit?: number` to `Booking` so Favorites can display it)
+
+### Optional polish (low effort)
+- Show the deposit amount on the booking row in Favorites' "My Bookings" list (small muted line: "Deposit paid: ₹X"). Worth including since data is now available.

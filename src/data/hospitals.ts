@@ -12,6 +12,7 @@ export interface Hospital {
   hours: string;
   price: 'Government' | 'Private' | 'Premium';
   image: string;
+  minDeposit: number;
 }
 
 const hospitalImages = [
