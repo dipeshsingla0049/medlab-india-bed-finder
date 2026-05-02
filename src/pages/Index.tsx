@@ -38,12 +38,14 @@ const Index = () => {
     setSearchQuery(query);
   }, []);
 
-  const handleBookingSubmit = useCallback((hospital: { id: number; name: string }, data: { name: string; phone: string; email: string; bedType: 'General' | 'ICU' }) => {
-    const id = `bk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const handleBookingSubmit = useCallback((hospital: { id: number; name: string }, data: { bookingId: string; name: string; phone: string; email: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: 'UPI' | 'Card' | 'Net Banking' }) => {
     const booking: Booking = {
-      id, hospitalId: hospital.id, hospitalName: hospital.name,
+      id: data.bookingId,
+      hospitalId: hospital.id,
+      hospitalName: hospital.name,
       name: data.name, phone: data.phone, email: data.email,
       bedType: data.bedType, createdAt: Date.now(),
+      deposit: data.deposit, paymentMethod: data.paymentMethod,
     };
     setBookings(prev => [...prev, booking]);
     setBedAdjustments(prev => {
@@ -51,8 +53,7 @@ const Index = () => {
       const key = data.bedType === 'General' ? 'general' : 'icu';
       return { ...prev, [hospital.id]: { ...cur, [key]: cur[key] - 1 } };
     });
-    toast.success('Booking submitted successfully');
-    return id;
+    toast.success('Bed secured — see you at the hospital');
   }, []);
 
   const handleCancelBooking = useCallback((bookingId: string) => {
