@@ -87,8 +87,9 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
 
   const handlePay = () => {
     const bookingId = generateBookingId();
+    const createdAt = Date.now();
     onSubmit({ bookingId, name, phone, email, bedType, deposit, paymentMethod });
-    setSuccess({ bookingId, name, bedType, deposit });
+    setSuccess({ bookingId, name, phone, bedType, deposit, paymentMethod, createdAt });
     setStep('success');
   };
 
