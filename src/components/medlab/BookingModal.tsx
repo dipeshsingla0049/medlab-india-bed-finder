@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, AlertCircle, Smartphone, CreditCard, Landmark, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Smartphone, CreditCard, Landmark, ShieldCheck, FileText } from 'lucide-react';
 import { z } from 'zod';
 import { Hospital } from '@/data/hospitals';
 import { getAdjustedBeds, BedAdjustment, getDeposit, generateBookingId } from '@/lib/bedStatus';
+import ReceiptModal from './ReceiptModal';
 
 type PaymentMethod = 'UPI' | 'Card' | 'Net Banking';
 
