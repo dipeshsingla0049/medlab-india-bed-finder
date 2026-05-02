@@ -279,12 +279,27 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
               </div>
             </div>
 
-            <button onClick={onClose} className="ml-btn w-full bg-ml-primary text-ml-white py-3 rounded-xl font-semibold hover:bg-ml-primary-dark transition-colors">
-              Done
-            </button>
+            <div className="space-y-2.5">
+              <button onClick={() => setReceiptOpen(true)} className="ml-btn w-full bg-ml-white border border-ml-primary/40 text-ml-primary py-3 rounded-xl font-semibold hover:bg-ml-primary-light transition-colors flex items-center justify-center gap-2">
+                <FileText className="w-4 h-4" />
+                View Receipt
+              </button>
+              <button onClick={onClose} className="ml-btn w-full bg-ml-primary text-ml-white py-3 rounded-xl font-semibold hover:bg-ml-primary-dark transition-colors">
+                Done
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {success && (
+        <ReceiptModal
+          hospital={hospital}
+          data={success}
+          isOpen={receiptOpen}
+          onClose={() => setReceiptOpen(false)}
+        />
+      )}
     </div>
   );
 };
