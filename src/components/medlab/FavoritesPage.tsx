@@ -13,7 +13,7 @@ interface FavoritesPageProps {
   bedAdjustments: Record<number, BedAdjustment>;
   bookings: Booking[];
   onCancelBooking: (bookingId: string) => void;
-  onBookingSubmit: (hospital: { id: number; name: string }, data: { name: string; phone: string; email: string; bedType: 'General' | 'ICU' }) => string;
+  onBookingSubmit: (hospital: { id: number; name: string }, data: { bookingId: string; name: string; phone: string; email: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: 'UPI' | 'Card' | 'Net Banking' }) => void;
 }
 
 const FavoritesPage = ({ savedIds, onToggleSave, onNavigate, bedAdjustments, bookings, onCancelBooking, onBookingSubmit }: FavoritesPageProps) => {
@@ -37,7 +37,13 @@ const FavoritesPage = ({ savedIds, onToggleSave, onNavigate, bedAdjustments, boo
                   <div className="min-w-0 flex-1">
                     <h4 className="font-syne font-bold text-ml-text truncate">{b.hospitalName}</h4>
                     <p className="text-xs text-ml-muted mt-0.5">{b.name} • {new Date(b.createdAt).toLocaleDateString()}</p>
-                    <span className="inline-block mt-2 bg-ml-primary-light text-ml-primary text-xs font-semibold px-2.5 py-0.5 rounded-full">{b.bedType}</span>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="bg-ml-primary-light text-ml-primary text-xs font-semibold px-2.5 py-0.5 rounded-full">{b.bedType}</span>
+                      <span className="font-mono text-[11px] text-ml-text-2 tracking-wider">#{b.id}</span>
+                      {typeof b.deposit === 'number' && (
+                        <span className="text-xs text-ml-muted">Deposit ₹{b.deposit.toLocaleString('en-IN')}</span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={() => onCancelBooking(b.id)}

@@ -41,4 +41,20 @@ export interface Booking {
   email: string;
   bedType: 'General' | 'ICU';
   createdAt: number;
+  deposit?: number;
+  paymentMethod?: 'UPI' | 'Card' | 'Net Banking';
 }
+
+export const getDeposit = (
+  hospital: { minDeposit?: number; price?: string },
+  bedType: 'General' | 'ICU'
+): number => {
+  const base = hospital.minDeposit ?? 2500;
+  const surcharge = bedType === 'ICU' ? 1500 : 0;
+  return base + surcharge;
+};
+
+export const generateBookingId = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};

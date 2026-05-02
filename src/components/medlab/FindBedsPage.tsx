@@ -11,7 +11,7 @@ interface FindBedsPageProps {
   onToggleSave: (id: number) => void;
   initialSearch?: string;
   bedAdjustments: Record<number, BedAdjustment>;
-  onBookingSubmit: (hospital: { id: number; name: string }, data: { name: string; phone: string; email: string; bedType: 'General' | 'ICU' }) => string;
+  onBookingSubmit: (hospital: { id: number; name: string }, data: { bookingId: string; name: string; phone: string; email: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: 'UPI' | 'Card' | 'Net Banking' }) => void;
 }
 
 const FindBedsPage = ({ savedIds, onToggleSave, initialSearch = '', bedAdjustments, onBookingSubmit }: FindBedsPageProps) => {
