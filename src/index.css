@@ -153,3 +153,63 @@
 .ml-btn:active {
   transform: scale(0.97);
 }
+
+/* ===== Print styles for receipt ===== */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden !important;
+  }
+  /* Strip overlay/modal chrome */
+  .receipt-overlay {
+    position: static !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    display: block !important;
+    inset: auto !important;
+    animation: none !important;
+  }
+  .receipt-modal {
+    position: static !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: #fff !important;
+    animation: none !important;
+  }
+  /* Show only the receipt content */
+  .receipt-content,
+  .receipt-content * {
+    visibility: visible !important;
+  }
+  .receipt-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 32px 40px !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  /* Hide close + actions */
+  .receipt-close,
+  .receipt-actions {
+    display: none !important;
+  }
+  /* Force readable colors */
+  .receipt-content .text-ml-muted { color: #555 !important; }
+  .receipt-content .text-ml-text { color: #000 !important; }
+  .receipt-content .text-ml-primary { color: #1a6bff !important; }
+  .receipt-content .border-ml-border { border-color: #d8dde6 !important; }
+  .receipt-badge {
+    background: #e6f7f0 !important;
+    color: #00a86b !important;
+  }
+  /* Avoid awkward page breaks within rows */
+  .receipt-row { page-break-inside: avoid; }
+  @page { margin: 12mm; }
+}

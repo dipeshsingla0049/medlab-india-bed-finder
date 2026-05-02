@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle2, AlertCircle, Smartphone, CreditCard, Landmark, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Smartphone, CreditCard, Landmark, ShieldCheck, FileText } from 'lucide-react';
 import { z } from 'zod';
 import { Hospital } from '@/data/hospitals';
 import { getAdjustedBeds, BedAdjustment, getDeposit, generateBookingId } from '@/lib/bedStatus';
+import ReceiptModal from './ReceiptModal';
 
 type PaymentMethod = 'UPI' | 'Card' | 'Net Banking';
 
@@ -41,7 +42,8 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
   const [bedType, setBedType] = useState<'General' | 'ICU'>('General');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState<{ bookingId: string; name: string; bedType: string; deposit: number } | null>(null);
+  const [success, setSuccess] = useState<{ bookingId: string; name: string; phone: string; bedType: 'General' | 'ICU'; deposit: number; paymentMethod: PaymentMethod; createdAt: number } | null>(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   const adjusted = hospital ? getAdjustedBeds(hospital, bedAdjustments) : { generalBeds: 0, icuBeds: 0 };
   const generalDisabled = adjusted.generalBeds === 0;
@@ -85,8 +87,9 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
 
   const handlePay = () => {
     const bookingId = generateBookingId();
+    const createdAt = Date.now();
     onSubmit({ bookingId, name, phone, email, bedType, deposit, paymentMethod });
-    setSuccess({ bookingId, name, bedType, deposit });
+    setSuccess({ bookingId, name, phone, bedType, deposit, paymentMethod, createdAt });
     setStep('success');
   };
 
@@ -276,12 +279,27 @@ const BookingModal = ({ hospital, isOpen, bedAdjustments, onClose, onSubmit }: B
               </div>
             </div>
 
-            <button onClick={onClose} className="ml-btn w-full bg-ml-primary text-ml-white py-3 rounded-xl font-semibold hover:bg-ml-primary-dark transition-colors">
-              Done
-            </button>
+            <div className="space-y-2.5">
+              <button onClick={() => setReceiptOpen(true)} className="ml-btn w-full bg-ml-white border border-ml-primary/40 text-ml-primary py-3 rounded-xl font-semibold hover:bg-ml-primary-light transition-colors flex items-center justify-center gap-2">
+                <FileText className="w-4 h-4" />
+                View Receipt
+              </button>
+              <button onClick={onClose} className="ml-btn w-full bg-ml-primary text-ml-white py-3 rounded-xl font-semibold hover:bg-ml-primary-dark transition-colors">
+                Done
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {success && (
+        <ReceiptModal
+          hospital={hospital}
+          data={success}
+          isOpen={receiptOpen}
+          onClose={() => setReceiptOpen(false)}
+        />
+      )}
     </div>
   );
 };
