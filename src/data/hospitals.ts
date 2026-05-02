@@ -86,6 +86,14 @@ while (generated.length < 90) {
   const name = `${chain} ${suffix} - ${area}`;
   const diseaseCount = range(2, 5);
   const diseases = Array.from(new Set(Array.from({ length: diseaseCount }, () => pick(allDiseases))));
+  const priceTier = pick(prices);
+  const depositRange: Record<Hospital['price'], [number, number]> = {
+    Government: [500, 1000],
+    Private: [1500, 2500],
+    Premium: [3000, 5000],
+  };
+  const [dMin, dMax] = depositRange[priceTier];
+  const minDeposit = Math.round(range(dMin, dMax) / 100) * 100;
   generated.push({
     id: nextId++,
     name,
@@ -98,7 +106,8 @@ while (generated.length < 90) {
     icuBeds: range(0, 25),
     contact: `+91 ${range(11, 99)}-${range(1000, 9999)}-${range(1000, 9999)}`,
     hours: pick(hoursOpts),
-    price: pick(prices),
+    price: priceTier,
+    minDeposit,
   });
 }
 
