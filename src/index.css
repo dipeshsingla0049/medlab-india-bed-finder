@@ -156,44 +156,52 @@
 
 /* ===== Print styles for receipt ===== */
 @media print {
-  /* Hide everything by default */
-  body * {
-    visibility: hidden !important;
+  /* Hide everything */
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
-  /* Strip overlay/modal chrome */
+  body > *:not(.receipt-overlay) {
+    display: none !important;
+  }
+  /* Strip overlay chrome — keep it in normal flow, no fixed positioning */
   .receipt-overlay {
     position: static !important;
+    inset: auto !important;
     background: #fff !important;
     backdrop-filter: none !important;
     padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
-    inset: auto !important;
+    height: auto !important;
+    width: auto !important;
+    z-index: auto !important;
     animation: none !important;
+    overflow: visible !important;
   }
   .receipt-modal {
     position: static !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     max-height: none !important;
+    height: auto !important;
     overflow: visible !important;
     max-width: 100% !important;
     width: 100% !important;
     background: #fff !important;
     animation: none !important;
-  }
-  /* Show only the receipt content */
-  .receipt-content,
-  .receipt-content * {
-    visibility: visible !important;
+    margin: 0 !important;
   }
   .receipt-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 32px 40px !important;
+    position: static !important;
+    width: 100% !important;
+    padding: 24px 28px !important;
     color: #000 !important;
     background: #fff !important;
+    page-break-inside: auto;
   }
   /* Hide close + actions */
   .receipt-close,
@@ -209,7 +217,7 @@
     background: #e6f7f0 !important;
     color: #00a86b !important;
   }
-  /* Avoid awkward page breaks within rows */
   .receipt-row { page-break-inside: avoid; }
-  @page { margin: 12mm; }
+  .receipt-section { page-break-inside: avoid; }
+  @page { margin: 12mm; size: auto; }
 }
