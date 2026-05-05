@@ -54,6 +54,7 @@ const ReceiptModal = ({ hospital, data, isOpen, onClose }: ReceiptModalProps) =>
 
   return (
     <div
+      ref={overlayRef}
       className="receipt-overlay modal-overlay fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4 ml-fade-in"
       onClick={onClose}
     >
