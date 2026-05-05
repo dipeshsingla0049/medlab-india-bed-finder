@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { X, Download, BadgeCheck, Heart } from 'lucide-react';
 import { Hospital } from '@/data/hospitals';
 
@@ -35,15 +36,25 @@ const ReceiptModal = ({ hospital, data, isOpen, onClose }: ReceiptModalProps) =>
   const dateStr = ts.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeStr = ts.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+
   const handleDownload = () => {
     const prevTitle = document.title;
     document.title = `MedLab_Receipt_${data.bookingId}`;
+    const overlay = overlayRef.current;
+    const parent = overlay?.parentNode;
+    // Move overlay to <body> so print CSS can isolate it
+    if (overlay) document.body.appendChild(overlay);
     window.print();
-    setTimeout(() => { document.title = prevTitle; }, 500);
+    setTimeout(() => {
+      if (overlay && parent) parent.appendChild(overlay);
+      document.title = prevTitle;
+    }, 500);
   };
 
   return (
     <div
+      ref={overlayRef}
       className="receipt-overlay modal-overlay fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4 ml-fade-in"
       onClick={onClose}
     >
