@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { X, Download, BadgeCheck, Heart } from 'lucide-react';
 import { Hospital } from '@/data/hospitals';
 
