@@ -36,11 +36,20 @@ const ReceiptModal = ({ hospital, data, isOpen, onClose }: ReceiptModalProps) =>
   const dateStr = ts.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const timeStr = ts.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+
   const handleDownload = () => {
     const prevTitle = document.title;
     document.title = `MedLab_Receipt_${data.bookingId}`;
+    const overlay = overlayRef.current;
+    const parent = overlay?.parentNode;
+    // Move overlay to <body> so print CSS can isolate it
+    if (overlay) document.body.appendChild(overlay);
     window.print();
-    setTimeout(() => { document.title = prevTitle; }, 500);
+    setTimeout(() => {
+      if (overlay && parent) parent.appendChild(overlay);
+      document.title = prevTitle;
+    }, 500);
   };
 
   return (
