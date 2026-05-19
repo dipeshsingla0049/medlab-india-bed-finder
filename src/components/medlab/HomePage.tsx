@@ -75,7 +75,17 @@ const HomePage = ({ onNavigate, onSearch }: HomePageProps) => {
             <button id="btn-find-beds" onClick={() => onNavigate('beds')} className="ml-btn flex items-center gap-2 bg-ml-primary text-ml-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-ml-primary-dark transition-colors">
               <BedDouble className="w-4 h-4" /> Find Beds
             </button>
-            <button id="btn-emergency-hero" onClick={() => { onNavigate('beds'); }} className="ml-btn flex items-center gap-2 bg-ml-emergency text-ml-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+            <button id="btn-emergency-hero" onClick={() => {
+              onNavigate('beds');
+              setTimeout(() => {
+                const bedFilter = document.getElementById('bed-filter') as HTMLSelectElement;
+                if (bedFilter) {
+                  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value')?.set;
+                  setter?.call(bedFilter, 'ICU Only');
+                  bedFilter.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              }, 150);
+            }} className="ml-btn flex items-center gap-2 bg-ml-emergency text-ml-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
               <Siren className="w-4 h-4" /> Find ICU Bed Now
             </button>
           </div>
